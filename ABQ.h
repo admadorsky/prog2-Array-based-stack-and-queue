@@ -1,21 +1,22 @@
 #ifndef LAB3_ABQ_H
 #define LAB3_ABQ_H
+using namespace std ;
 
 template <class T> class ABQ {
 public:
-    // constructors
+    // (DONE) constructors
     ABQ() ;
     ABQ(int capacity) ;
 
-    // the big three
+    // (DONE) the big three
     ABQ(const ABQ &d) ;
     ABQ &operator=(const ABQ &d) ;
     ~ABQ() ;
 
-    // void funcs
+    // (DONE) void funcs
     void enqueue(T data) ;
 
-    // template funcs
+    // (DONE) template funcs
     T dequeue() ;
     T peek() ;
 
@@ -79,15 +80,15 @@ template<class T> void ABQ<T>::enqueue(T data) {
     if (size >= max_capacity) {
         // create a temporary array with double the space
         max_capacity *= scale_factor;
-        T *tempstack = new T[max_capacity];
-        // populate it with the data currently in queue, leaving a space at the end
-        for (unsigned int i = 0; i < size; i++) {
-            tempstack[i + 1] = queue[i];
-        }
-        // reassign the pointer, making the active queue the same as temp
-        delete[] queue ;
-        queue = tempstack ;
     }
+    T *tempqueue = new T[max_capacity];
+    // populate it with the data currently in queue, leaving a space at the end
+    for (unsigned int i = 0; i < size; i++) {
+        tempqueue[i + 1] = queue[i];
+    }
+    // reassign the pointer, making the active queue the same as temp
+    delete[] queue ;
+    queue = tempqueue ;
     // add the enqueued data to the end of the line
     queue[0] = data ;
     size ++ ;
@@ -95,15 +96,44 @@ template<class T> void ABQ<T>::enqueue(T data) {
 
 // remove one item from the "front of the line" and return its value: dequeue
 template<class T> T ABQ<T>::dequeue() {
-    T first_in_line = queue[size - 1] ;
-    if ((size - 1) < (max_capacity / scale_factor)) {
-        max_capacity /= (int)scale_factor ;
-        T *tempstack = new T[max_capacity] ;
-        for (int i = 0; i < size - 1; i++) {
-            tempstack[i] = queue[i] ;
-        }
-    }
+    if (size == 0) { throw runtime_error("Cannot dequeue empty queue") ; }
 
+    T first_in_line = queue[size - 1] ;
+    // effectively removes the first item in the list
+    size -= 1 ;
+
+    // check if array needs resizing
+    if ((size) < (max_capacity / scale_factor)) {
+        max_capacity /= (int)scale_factor ;
+        T *tempqueue = new T[max_capacity] ;
+        /* copy everything into resized temp array except for the head
+        (remember size decreased by 1 already) */
+        for (unsigned int i = 0; i < size; i++) {
+            tempqueue[i] = queue[i] ;
+        }
+        // reassign the active array pointer to the temp array
+        delete[] queue ;
+        queue = tempqueue ;
+    }
+    return first_in_line ;
+}
+
+template<class T> T ABQ<T>::peek() {
+    if (size == 0) { throw runtime_error("Cannot peek into an empty queue") ; }
+    // returns value at the "front of the line"
+    return queue[size - 1] ;
+}
+
+template<class T> unsigned int ABQ<T>::getSize() {
+    return size ;
+}
+
+template<class T> unsigned int ABQ<T>::getMaxCapacity() {
+    return max_capacity ;
+}
+
+template<class T> T *ABQ<T>::getData() {
+    return queue ;
 }
 
 #endif //LAB3_ABQ_H
